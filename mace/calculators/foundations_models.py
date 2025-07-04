@@ -147,7 +147,17 @@ def mace_mp(
         )
 
     if return_raw_model:
-        return torch.load(model_path, map_location=device)
+        try:
+            return torch.load(model_path, map_location=device)
+        except (ValueError, RuntimeError, AttributeError) as e:
+            if "too many values to unpack" in str(e) or "codegen" in str(e).lower():
+                raise ValueError(
+                    f"Failed to load model from {model_path}. "
+                    f"This is likely due to an e3nn version compatibility issue. "
+                    f"Please try updating e3nn or using a different model: {e}"
+                ) from e
+            else:
+                raise e
 
     mace_calc = MACECalculator(
         model_paths=model_path, device=device, default_dtype=default_dtype, **kwargs
@@ -243,7 +253,17 @@ def mace_off(
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
     if return_raw_model:
-        return torch.load(model, map_location=device)
+        try:
+            return torch.load(model, map_location=device)
+        except (ValueError, RuntimeError, AttributeError) as e:
+            if "too many values to unpack" in str(e) or "codegen" in str(e).lower():
+                raise ValueError(
+                    f"Failed to load model from {model}. "
+                    f"This is likely due to an e3nn version compatibility issue. "
+                    f"Please try updating e3nn or using a different model: {e}"
+                ) from e
+            else:
+                raise e
 
     if default_dtype == "float64":
         print(
@@ -307,7 +327,17 @@ def mace_anicc(
             raise RuntimeError(f"Failed to download model: {e}") from e
 
     if return_raw_model:
-        return torch.load(model_path, map_location=device)
+        try:
+            return torch.load(model_path, map_location=device)
+        except (ValueError, RuntimeError, AttributeError) as e:
+            if "too many values to unpack" in str(e) or "codegen" in str(e).lower():
+                raise ValueError(
+                    f"Failed to load model from {model_path}. "
+                    f"This is likely due to an e3nn version compatibility issue. "
+                    f"Please try updating e3nn or using a different model: {e}"
+                ) from e
+            else:
+                raise e
     return MACECalculator(
         model_paths=model_path, device=device, default_dtype="float64"
     )

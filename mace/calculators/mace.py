@@ -162,10 +162,23 @@ class MACECalculator(Calculator):
             self.num_models = len(model_paths)
 
             # Load models from files
-            self.models = [
-                torch.load(f=model_path, map_location=device)
-                for model_path in model_paths
-            ]
+            self.models = []
+            for model_path in model_paths:
+                try:
+                    model = torch.load(f=model_path, map_location=device)
+                    self.models.append(model)
+                except (ValueError, RuntimeError, AttributeError) as e:
+                    if (
+                        "too many values to unpack" in str(e)
+                        or "codegen" in str(e).lower()
+                    ):
+                        raise ValueError(
+                            f"Failed to load model from {model_path}. "
+                            f"This is likely due to an e3nn version compatibility issue. "
+                            f"Please try updating e3nn or using a different model: {e}"
+                        ) from e
+                    else:
+                        raise e
 
         elif models is not None:
             if not isinstance(models, list):
