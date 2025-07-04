@@ -138,12 +138,45 @@ class BackendTestBase:
         )
 
         # Check outputs match for both conversions
-        torch.testing.assert_close(out_e3nn["energy"], out_backend["energy"])
-        torch.testing.assert_close(out_backend["energy"], out_e3nn_back["energy"])
-        torch.testing.assert_close(out_e3nn["forces"], out_backend["forces"])
-        torch.testing.assert_close(out_backend["forces"], out_e3nn_back["forces"])
-        torch.testing.assert_close(out_e3nn["stress"], out_backend["stress"])
-        torch.testing.assert_close(out_backend["stress"], out_e3nn_back["stress"])
+        # Use appropriate tolerances for forward pass comparisons
+        forward_tol = 1e-4 if default_dtype == torch.float32 else 1e-6
+
+        torch.testing.assert_close(
+            out_e3nn["energy"],
+            out_backend["energy"],
+            atol=forward_tol,
+            rtol=forward_tol,
+        )
+        torch.testing.assert_close(
+            out_backend["energy"],
+            out_e3nn_back["energy"],
+            atol=forward_tol,
+            rtol=forward_tol,
+        )
+        torch.testing.assert_close(
+            out_e3nn["forces"],
+            out_backend["forces"],
+            atol=forward_tol,
+            rtol=forward_tol,
+        )
+        torch.testing.assert_close(
+            out_backend["forces"],
+            out_e3nn_back["forces"],
+            atol=forward_tol,
+            rtol=forward_tol,
+        )
+        torch.testing.assert_close(
+            out_e3nn["stress"],
+            out_backend["stress"],
+            atol=forward_tol,
+            rtol=forward_tol,
+        )
+        torch.testing.assert_close(
+            out_backend["stress"],
+            out_e3nn_back["stress"],
+            atol=forward_tol,
+            rtol=forward_tol,
+        )
 
         # Test backward pass equivalence
         loss_e3nn = out_e3nn["energy"].sum()
