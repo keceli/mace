@@ -156,8 +156,7 @@ def mace_mp(
                     f"This is likely due to an e3nn version compatibility issue. "
                     f"Please try updating e3nn or using a different model: {e}"
                 ) from e
-            else:
-                raise e
+            raise e
 
     mace_calc = MACECalculator(
         model_paths=model_path, device=device, default_dtype=default_dtype, **kwargs
@@ -262,8 +261,7 @@ def mace_off(
                     f"This is likely due to an e3nn version compatibility issue. "
                     f"Please try updating e3nn or using a different model: {e}"
                 ) from e
-            else:
-                raise e
+            raise e
 
     if default_dtype == "float64":
         print(
@@ -336,8 +334,7 @@ def mace_anicc(
                     f"This is likely due to an e3nn version compatibility issue. "
                     f"Please try updating e3nn or using a different model: {e}"
                 ) from e
-            else:
-                raise e
+            raise e
     return MACECalculator(
         model_paths=model_path, device=device, default_dtype="float64"
     )
