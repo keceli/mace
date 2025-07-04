@@ -10,6 +10,7 @@ import dataclasses
 import json
 import logging
 import os
+import pickle
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -695,17 +696,32 @@ def get_swa(
         logging.info(
             f"Stage Two (after {args.start_swa} epochs) with loss function: {loss_fn_energy}, with energy weight : {args.swa_energy_weight}, forces weight : {args.swa_forces_weight} and learning rate : {args.swa_lr}"
         )
-    swa = SWAContainer(
-        model=AveragedModel(model),
-        scheduler=SWALR(
-            optimizer=optimizer,
-            swa_lr=args.swa_lr,
-            anneal_epochs=1,
-            anneal_strategy="linear",
-        ),
-        start=args.start_swa,
-        loss_fn=loss_fn_energy,
-    )
+    # Try to create AveragedModel - may fail for TorchScript models
+    try:
+        averaged_model = AveragedModel(model)
+        swa = SWAContainer(
+            model=averaged_model,
+            scheduler=SWALR(
+                optimizer=optimizer,
+                swa_lr=args.swa_lr,
+                anneal_epochs=1,
+                anneal_strategy="linear",
+            ),
+            start=args.start_swa,
+            loss_fn=loss_fn_energy,
+        )
+    except (RuntimeError, pickle.PickleError) as e:
+        logging.warning(
+            f"Failed to create SWA (Stochastic Weight Averaging) model: {e}"
+        )
+        logging.warning(
+            "SWA is disabled. This is likely due to TorchScript compilation in the model."
+        )
+        logging.warning(
+            "To enable SWA, consider using models without TorchScript compilation."
+        )
+        swas[-1] = False  # Disable SWA
+        swa = None
     return swa, swas
 
 
